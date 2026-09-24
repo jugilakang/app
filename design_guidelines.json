@@ -1,0 +1,149 @@
+{
+  "app_name": "TukangGaji Pro",
+  "personality": "7 Dark-First Utility DARK",
+  "personality_one_liner": "An industrial-grade command center for site admins to track daily attendance, half-days, hourly overtime, and project payroll with absolute clarity.",
+  "color": {
+    "surface": "#121417",
+    "onSurface": "#F4F5F7",
+    "surfaceSecondary": "#1A1D23",
+    "onSurfaceSecondary": "#9CA3AF",
+    "surfaceTertiary": "#252A34",
+    "onSurfaceTertiary": "#D1D5DB",
+    "surfaceInverse": "#FFFFFF",
+    "onSurfaceInverse": "#121417",
+    "brand": "#D97706",
+    "brandPrimary": "#F59E0B",
+    "onBrandPrimary": "#121417",
+    "brandSecondary": "#B45309",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "rgba(245, 158, 11, 0.15)",
+    "onBrandTertiary": "#F59E0B",
+    "success": "#10B981",
+    "onSuccess": "#FFFFFF",
+    "warning": "#F59E0B",
+    "onWarning": "#121417",
+    "error": "#EF4444",
+    "onError": "#FFFFFF",
+    "info": "#3B82F6",
+    "onInfo": "#FFFFFF",
+    "border": "#2A313C",
+    "borderStrong": "#4B5563",
+    "divider": "#1F242C",
+    "muted": "#9CA3AF",
+    "onBrand": "#121417"
+  },
+  "typography": {
+    "displayFontFamily": "Barlow Condensed",
+    "textFontFamily": "Satoshi",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous touch spacing for outdoor site use with 8pt base grid and 56pt minimum interactive targets.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 0,
+  "navigation": "bottom_tabs",
+  "icon_set": "MaterialCommunityIcons",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [
+      "Use solid contrast borders and dark tactical surfaces for extreme outdoor visibility under direct sunlight."
+    ],
+    "dont's": [
+      "Never use low-contrast glass blur that reduces text legibility in dusty field conditions."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-blur",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Dashboard",
+      "purpose": "Overview of active project workforce, today's attendance breakdown (Full/Half/Absent), and running payroll liability.",
+      "states": {
+        "loading": "Skeleton card loader for active project stats and quick clock-in counters.",
+        "empty": "No workers assigned to this project yet. Tap 'Manage Workers' to assign crew members.",
+        "error": "Failed to sync attendance ledger. Check field connection and tap Retry."
+      },
+      "layout": "Sticky site header with project switcher dropdown, live metric cards (Active Workers, Present Today, Running Payroll), quick action grid for attendance check-in, and recent attendance feed."
+    },
+    {
+      "name": "Attendance Entry",
+      "purpose": "Fast daily check-in/out logging with support for Full-Day, Half-Day (Morning/Afternoon), and precise hourly overtime tracking.",
+      "states": {
+        "loading": "Loading worker list and active shift assignments...",
+        "empty": "All workers have been checked in for today.",
+        "error": "Could not record attendance. Please retry or save offline."
+      },
+      "layout": "Searchable worker list for active project, instant status selector chips (Hadir Full / Setengah / Alpha), time-in/out pickers, and expandable overtime hour stepper."
+    },
+    {
+      "name": "Workers & Rates",
+      "purpose": "Manage workforce directory, active project assignment, custom daily rates, half-day rates, and hourly overtime rates.",
+      "states": {
+        "loading": "Loading worker database and rate configurations...",
+        "empty": "No workers registered. Add your first worker to get started.",
+        "error": "Failed to load worker directory. Tap to retry."
+      },
+      "layout": "Card list of workers with avatar/initials, active project badge, configured daily rate, half-day rate, and overtime rate per hour, with FAB to add new worker."
+    },
+    {
+      "name": "Projects",
+      "purpose": "Manage active construction sites, location details, and assigned single active workforce.",
+      "states": {
+        "loading": "Loading construction projects...",
+        "empty": "No projects created yet. Tap '+' to start a new project site.",
+        "error": "Could not load projects. Please check connection."
+      },
+      "layout": "Vertical list of project cards showing site name, location, active worker count, budget status, and tap-to-switch active project."
+    },
+    {
+      "name": "Payroll Summary",
+      "purpose": "Automated payroll calculation combining daily/half-day attendance wages + hourly overtime rates, with payment status tracking (Unpaid / Paid).",
+      "states": {
+        "loading": "Calculating payroll ledger across active project...",
+        "empty": "No attendance records found for this payroll cycle.",
+        "error": "Failed to compute payroll summary. Tap to retry."
+      },
+      "layout": "Date range picker, total payroll liability hero card, breakdown by worker (Days Worked + Overtime Hours x Rate = Total Pay), and one-tap 'Mark as Paid' action button."
+    }
+  ],
+  "images": {
+    "worker_default_avatar": {
+      "url": "https://images.unsplash.com/photo-1672748341520-6a839e6c05bb?auto=format&fit=crop&q=85&w=400",
+      "alt": "Construction site worker portrait"
+    },
+    "project_hero": {
+      "url": "https://images.pexels.com/photos/34670926/pexels-photo-34670926.jpeg?auto=format&fit=crop&q=85&w=800",
+      "alt": "Construction site overview"
+    }
+  },
+  "instructions_to_main_agent": "Ensure absolute field reliability and sunlight readability using the Dark-First Utility palette (#121417 background with warm amber #F59E0B accents). Implement sticky bottom navigation with 5 active tabs: Dashboard, Attendance, Workers, Projects, Payroll. Support admin-only workflow with strict one-worker-one-active-project rule. Ensure daily rate, half-day rate, and hourly overtime rate are clearly computed and editable in worker settings. All touch targets must be >= 44x44pt. Use exact token names from guidelines.json."
+}

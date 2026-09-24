@@ -1,0 +1,7 @@
+export type Project = { id: string; name: string; location: string; status: "active" | "archived"; worker_count: number; created_at: string };
+export type Worker = { id: string; name: string; phone: string; project_id: string; project_name: string; daily_rate: number; half_day_rate: number; overtime_rate: number; status: "active" | "inactive"; created_at: string };
+export type AttendanceStatus = "full" | "half" | "absent";
+export type Attendance = { id: string; project_id: string; worker_id: string; worker_name: string; date: string; status: AttendanceStatus; half_day_period?: "morning" | "afternoon" | null; time_in?: string | null; time_out?: string | null; overtime_hours: number; notes: string; daily_rate: number; half_day_rate: number; overtime_rate: number; created_at: string };
+export type Dashboard = { active_workers: number; present: number; half_day: number; absent: number; logged: number; date: string };
+export type PayrollRow = { worker_id: string; worker_name: string; days: number; half_days: number; overtime_hours: number; daily_total: number; overtime_total: number; total: number };
+export type Payroll = { rows: PayrollRow[]; total: number; status: "paid" | "unpaid"; start_date: string; end_date: string };
