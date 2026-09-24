@@ -165,7 +165,13 @@ export default function GajiScreen() {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Per pekerja · {periodInfo.label}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 6 }}>
+            <Text style={styles.sectionTitle}>Per pekerja · {periodInfo.label}</Text>
+            <View testID="payroll-grand-total" style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.brandTertiary, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }}>
+              <MaterialDesignIcons name="account-hard-hat" size={14} color={colors.onBrandTertiary} />
+              <Text style={{ color: colors.onBrandTertiary, fontSize: 11, fontWeight: "800" }}>{payroll.total_days} hari · {fmtHours(payroll.total_overtime_hours)} lembur</Text>
+            </View>
+          </View>
           {payroll.rows.length === 0 ? (
             <EmptyState compact icon="account-off-outline" title="Tidak ada pekerja" body="Belum ada pekerja pada filter grup ini." />
           ) : (

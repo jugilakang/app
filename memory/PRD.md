@@ -1,4 +1,4 @@
-# TukangGaji Pro — PRD
+# TukangGaji Pro — PRD (sekarang: **MandorApp**, "Powered by Lilik Jr")
 
 ## Problem statement asli
 "Build a mobile app: buat aplikasi absen beserta include gaji nya untuk proyek ada gajian harian dan bisa setengah hari juga buat detail masuk dan keluar nya lalu ada lemburan nya juga di hitung berdasarkan per jam"
@@ -25,7 +25,8 @@ Pivot V2 (user, messages 74/77): peran Admin + Pekerja (view-only, login Kode+PI
 - V1 (awal): proyek/pekerja/absensi harian sederhana + gaji harian (digantikan V2).
 - V2 penuh: auth 2 peran (admin seeded + worker code/PIN, reset PIN, duplikat nama 409), dasbor admin (estimasi upah, statistik, kehadiran per grup, aktivitas), absensi tap + edit/hapus + toggle tanpa istirahat siang/sore + lembur otomatis/manual + catatan, payroll periode 1–15 / 16–akhir, pembayaran multi-pekerja via mandor/langsung + riwayat, ekspor .xlsx (gaji & absensi, unduh web / share sheet native), portal pekerja read-only (beranda, absensi bulanan, gaji per periode + pembayaran diterima).
 - REVISI MODEL GAJI (24 Sep): gaji pokok PER HARI — penuh = tarif harian, setengah = ½ tarif harian; tarif per jam (overtime_rate) hanya untuk lembur (mulai 18.00) & bonus no-rest siang (1,5 j) / sore (1 j). Field worker: daily_rate + overtime_rate (migrasi hourly_rate×8,5 → daily_rate sudah dijalankan). Terverifikasi: full+no-rest×2+lembur 2,5j = 160rb+50rb+50rb = Rp260.000; ½ hari = Rp80.000.
-- Testing: iteration_1 25/25 backend + UI PASS; iteration_2 (model per hari) 29/29 backend + 34/34 UI PASS.
+- REVISI (24 Sep, lanjutan): rebrand MandorApp ("Powered by Lilik Jr" di login + header admin); no-rest siang jadi 1 jam (11.30–12.30); rekap periode menampilkan per pekerja (hari + jam lembur) dan GRAND TOTAL (total_days & total_overtime_hours di API /api/payroll, chip di UI, baris GRAND TOTAL di Excel).
+- Testing: iteration_1 25/25 backend + UI PASS; iteration_2 (model per hari) 29/29 + 34/34 PASS; iteration_3 (rebrand + no-rest 1 j + grand total) 33/33 backend + semua cek UI PASS.
 
 ## Backlog
 - P0: (kosong)

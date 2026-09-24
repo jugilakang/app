@@ -132,7 +132,7 @@ export default function WorkerHome() {
               <MaterialDesignIcons name="clock-plus-outline" size={18} color={colors.brandSecondary} />
               <Text style={styles.rateText}>Lembur {money(worker?.overtime_rate ?? 0)}/jam (mulai 18.00)</Text>
             </View>
-            <Text style={styles.rateHint}>Gaji pokok dihitung per hari. Bonus tanpa istirahat (siang +1,5 j, sore +1 j) memakai tarif lembur per jam.</Text>
+            <Text style={styles.rateHint}>Gaji pokok dihitung per hari. Bonus tanpa istirahat (siang 11.30–12.30 dan sore 17.00–18.00, masing-masing +1 j) memakai tarif lembur per jam.</Text>
           </View>
         </ScrollView>
       )}

@@ -52,7 +52,8 @@ export default function AdminDashboard() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.brand}>TukangGaji <Text style={{ color: colors.brandPrimary }}>PRO</Text></Text>
+          <Text style={styles.brand}>Mandor<Text style={{ color: colors.brandPrimary }}>App</Text></Text>
+          <Text style={{ color: colors.brandPrimary, fontSize: 10, fontWeight: "700", letterSpacing: 0.5 }}>Powered by Lilik Jr</Text>
           <Text style={styles.caption}>{fmtDateID(todayISO())}</Text>
         </View>
         <View style={styles.headerRight}>

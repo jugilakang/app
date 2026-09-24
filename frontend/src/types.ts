@@ -82,6 +82,8 @@ export type Payroll = {
   total_gross: number;
   total_paid: number;
   total_remaining: number;
+  total_days: number;
+  total_overtime_hours: number;
 };
 
 export type PaymentSplit = { worker_id: string; worker_name: string; amount: number };

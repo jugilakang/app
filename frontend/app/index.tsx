@@ -12,7 +12,7 @@ export default function Gate() {
   if (!ready) {
     return (
       <View style={styles.root} testID="app-loading">
-        <Text style={styles.brand}>TukangGaji <Text style={{ color: colors.brandPrimary }}>PRO</Text></Text>
+        <Text style={styles.brand}>Mandor<Text style={{ color: colors.brandPrimary }}>App</Text></Text>
         <ActivityIndicator color={colors.brandPrimary} size="large" />
       </View>
     );

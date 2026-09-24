@@ -51,8 +51,8 @@ export default function LoginScreen() {
       <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <View style={styles.brandRow}>
           <View style={styles.brandIcon}><MaterialDesignIcons name="account-hard-hat" size={30} color={colors.onBrandPrimary} /></View>
-          <Text style={styles.brand}>TukangGaji <Text style={{ color: colors.brandPrimary }}>PRO</Text></Text>
-          <Text style={styles.tagline}>Absensi & gaji harian proyek, tanpa ribet.</Text>
+          <Text style={styles.brand}>Mandor<Text style={{ color: colors.brandPrimary }}>App</Text></Text>
+          <Text style={styles.tagline}>Powered by Lilik Jr</Text>
         </View>
 
         <View style={styles.card}>

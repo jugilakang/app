@@ -1,0 +1,37 @@
+{
+  "summary": "Full-stack test MandorApp (ex-TukangGaji Pro) iteration 3. BACKEND: rewrote stale suite -> /app/backend/tests/test_mandorapp_api.py (old test_tukanggaji_api.py deleted): 33 passed, 1 xfailed. NO-REST SIANG 1 JAM verified exactly on TEST worker (160rb/hari, lembur 25rb/j): siang saja 07:00-17:00 -> rest_hours 1.0 / rest_pay 25.000 / total 185.000 (BUKAN 1,5j/37.500); siang+sore -> 2.0 / 50.000 / 210.000; siang pada setengah hari (13:00-17:00) -> 0 (butuh shift penuh); kombinasi 07:00-20:30 + siang&sore + lembur 2,5j -> 272.500. Gaji pokok per hari regresi OK (penuh 160rb, 1/2 hari 80rb). PAYROLL GRAND TOTAL: total_days & total_overtime_hours konsisten dengan jumlah baris (termasuk saat filter grup Besi); EXCEL GAJI: baris terakhir GRAND TOTAL dengan jumlah hari/jam lembur/rupiah cocok dengan jumlah baris & API payroll. Payments mandor (wajib nama 422) & langsung (create->paid+5rb->delete->restore) OK; role guards 401/403 OK; worker self-service via TEST worker (PIN diketahui) OK. FRONTEND (mobile 375x667, semua via public URL): login 'MandorApp' + 'Powered by Lilik Jr' OK; header dasbor admin sama OK; TIDAK ada teks 'TukangGaji' di UI manapun (login/dasbor/gaji/worker); chip grand total testID payroll-grand-total tampil berformat 'X hari · Y j lembur' dan cocok dengan jumlah rows (Besi: '5 hari · 15 j lembur' = Bayu 2h/6j + Reza 3h/9j); per pekerja 'N hari penuh · M 1/2 hari · Z j lembur' OK; sheet edit absensi menampilkan '11.30-12.30 dibayar +1 j x tarif lembur' & '17.00-18.00 ... +1 j', tanpa teks '1,5'; worker home juga memuat aturan +1 j; filter grup/ganti bulan/periode OK; payment sheet mandor<->langsung OK (ditutup TANPA submit); login pekerja (TEST UI Worker TG004) + role guard (worker diarahkan keluar dari rute admin) + logout OK. CATATAN: data user berubah selama tes (user aktif) - grand total saat UI test = 6 hari · 18 j lembur, tetap konsisten.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/ (server.py:822)", "issue": "Rebrand belum menyentuh root API: message masih 'TukangGaji Pro API v2 (gaji per hari)'. Non-UI tapi terlihat bila endpoint dibuka langsung. Ditandai xfail di test_root_rebrand_note.", "priority": "LOW"},
+      {"endpoint": "server.py:100", "issue": "Docstring compute_day masih menyebut 'tanpa istirahat siang (1,5 j)' - komentar usang, logika sudah benar (LUNCH_REST_HOURS=1.0).", "priority": "LOW"}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "Rebrand leftovers (non-UI-screen)", "issue": "Teks 'tukanggaji' masih ada di: frontend/src/api.ts:89 (nama file unduhan Excel 'tukanggaji-gaji-...xlsx' - TERLIHAT user saat download), frontend/app.json:4 (slug 'tukanggaji-pro'), frontend/src/theme.ts:6 (komentar). app.json slug dilindungi/boleh dibiarkan, tapi nama file unduhan sebaiknya diganti 'mandorapp-...'."}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_mandorapp_api.py", "/app/test_reports/pytest/pytest_results.xml", "/app/test_reports/ui/i3_login_rebrand.jpeg", "/app/test_reports/ui/i3_dashboard_rebrand.jpeg", "/app/test_reports/ui/i3_gaji_grandtotal.jpeg", "/app/test_reports/ui/i3_gaji_filters.jpeg", "/app/test_reports/ui/i3_absensi_edit_sheet.jpeg", "/app/test_reports/ui/i3_payment_sheet.jpeg", "/app/test_reports/ui/i3_worker_home.jpeg", "/app/test_reports/ui/i3_worker_roleguard.jpeg"],
+  "action_items": [
+    "Rebrand backend root message server.py:822 -> 'MandorApp API' (lalu hapus xfail di test_root_rebrand_note).",
+    "Ganti nama file unduhan Excel di frontend/src/api.ts:89 dari 'tukanggaji-...' ke 'mandorapp-...' (user-visible saat download).",
+    "Perbarui docstring compute_day server.py:100 (1,5 j -> 1 j) dan komentar theme.ts:6."
+  ],
+  "critical_code_review_comments": [
+    "LUNCH_REST_HOURS=1.0 & EVENING_REST_HOURS=1.0 diterapkan benar di compute_day; bonus siang hanya bila shift penuh (morning & afternoon) - terkunci oleh test test_norest_siang_butuh_shift_penuh.",
+    "payroll total_days = sum(days+half_days) dan total_overtime_hours = sum(overtime_hours) (tidak termasuk rest_hours) - sesuai format chip 'X hari · Y j lembur'; diverifikasi konsisten via API, UI, dan baris GRAND TOTAL Excel.",
+    "Mongo _id & pin_hash tidak pernah bocor; Pydantic validation lengkap; tidak ada deprecated Expo packages (expo-av/barcode-scanner/background-fetch absen).",
+    "Flaky test handling: unduhan ekspor via proxy publik sekali terpotong (BadZipFile) di bawah xdist; lolos saat retry. Ditambahkan retry 3x di TestExport._get_export."
+  ],
+  "updated_files": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_mandorapp_api.py (baru, menggantikan test_tukanggaji_api.py yang dihapus)"],
+  "success_rate": {"backend": "100% (33 passed, 1 xfailed known-issue)", "frontend": "100% (semua cek UI lolos: 6/6 rebrand+login, 8/8 gaji & chip & filter, 3/3 sheet absensi, 5/5 worker & role guard & payment sheet)"},
+  "seed_data_creation": "Dibuat lalu dibersihkan penuh: pytest 'TEST Pekerja Pytest' + 'TEST Pekerja Login' (Kuli, 160rb/25rb) beserta absensinya (20-24 Sep); UI 'TEST UI Worker' TG004 (dihapus hard-delete). Verifikasi akhir: 0 worker/absensi TEST tersisa, 3 pekerja asli (Bayu/Reza/Obeng) utuh. DISCLOSURE: saat UI test, satu PUT edit-absensi tak sengaja terkirim ke record Bayu 2026-09-24 karena force-click menembus overlay sheet (Escape tidak menutup Sheet RN-web) - payload identik dengan nilai tersimpan (diverifikasi via mongosh: nilai sama, hanya updated_at berubah; tidak ada perubahan data).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Suite regresi: cd /app && python3 -m pytest backend/tests/ -n0 -v. Kredensial: admin/tukangpro123; PIN pekerja asli TIDAK diketahui - fixture login_worker membuat TEST worker sendiri (PIN 4321) dan membersihkannya. Data asli BERUBAH-UBAH (user aktif): jangan assert nilai absolut data asli, gunakan perbandingan konsistensi (total == sum rows) atau >= threshold. URL publik dari frontend/.env key EXPO_PUBLIC_BACKEND_URL. Gotcha Playwright RN-web: Sheet TIDAK tertutup oleh Escape - gunakan testID '<sheet-testid>-close' atau '<sheet-testid>-backdrop'; JANGAN force-click tab bar saat sheet terbuka (koordinat menembus ke konten sheet - bisa memicu Simpan). ChipRow testID: '<base>-<option-lowercase-dashes>' (mis. payroll-group-filter-besi); chip periode pilih via get_by_text('1-15 Sep'/'16-30 Sep').",
+  "rca_of_issue": "Satu-satunya kegagalan: TestExport.test_export_attendance_tipe_hari_column gagal 1x (BadZipFile) saat run paralel xdist - root cause: stream xlsx terpotong proxy publik saat beban paralel; lolos saat retry & run serial. Mitigasi: retry 3x di _get_export. Bukan bug aplikasi."
+}

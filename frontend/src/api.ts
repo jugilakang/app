@@ -86,7 +86,7 @@ export async function downloadExport(kind: "payroll" | "attendance", params: { m
   const qs = new URLSearchParams({ month: params.month, period: String(params.period), token });
   if (params.group && params.group !== "Semua") qs.set("group", params.group);
   const url = `${API_URL}/export/${kind}?${qs.toString()}`;
-  const filename = `tukanggaji-${kind}-${params.month}-p${params.period}.xlsx`;
+  const filename = `mandorapp-${kind}-${params.month}-p${params.period}.xlsx`;
   if (Platform.OS === "web") {
     const anchor = document.createElement("a");
     anchor.href = url;

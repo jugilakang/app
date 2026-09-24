@@ -41,7 +41,7 @@ GROUPS = ["Teknisi", "Besi", "Kayu", "Finishing", "Tukang", "Kuli"]
 MORNING_END = 11 * 60 + 30      # 11:30 -> akhir shift pagi
 AFTERNOON_START = 13 * 60       # 13:00 -> mulai shift siang
 EVENING_REST_END = 18 * 60      # 18:00 -> lembur mulai
-LUNCH_REST_HOURS = 1.5          # 11.30-13.00, dibayar bila no_rest_siang
+LUNCH_REST_HOURS = 1.0          # 11.30-12.30, dibayar bila no_rest_siang
 EVENING_REST_HOURS = 1.0        # 17.00-18.00, dibayar bila no_rest_sore
 
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -97,7 +97,7 @@ def compute_day(rec: dict, daily_rate: float, overtime_rate: float) -> dict:
 
     Gaji pokok dihitung per HARI: hari penuh = tarif harian, setengah hari =
     setengah tarif harian. Tarif per jam (overtime_rate) HANYA dipakai untuk
-    lembur (mulai 18.00) dan bonus tanpa istirahat siang (1,5 j) / sore (1 j).
+    lembur (mulai 18.00) dan bonus tanpa istirahat siang (1 j, 11.30–12.30) / sore (1 j, 17.00–18.00).
     """
     day_type = "none"
     masuk = rec.get("masuk_at")
@@ -600,6 +600,8 @@ async def get_payroll(
         "total_gross": sum(r["gross"] for r in rows),
         "total_paid": sum(r["paid"] for r in rows),
         "total_remaining": sum(r["remaining"] for r in rows),
+        "total_days": sum(r["days"] + r["half_days"] for r in rows),
+        "total_overtime_hours": round(sum(r["overtime_hours"] for r in rows), 2),
     }
 
 
@@ -756,11 +758,28 @@ async def export_payroll(month: str, period: int = 1, group: Optional[str] = Non
     ws.title = "Gaji"
     headers = ["Kode", "Nama", "Grup", "Hari Penuh", "Setengah Hari", "Jam No-Rest", "Jam Lembur", "Upah Harian (Rp)", "Upah No-Rest (Rp)", "Upah Lembur (Rp)", "Total (Rp)", "Terbayar (Rp)", "Sisa (Rp)"]
     style_sheet(ws, headers, [10, 26, 12, 10, 12, 11, 11, 16, 16, 16, 16, 16, 16])
-    for i, w in enumerate(workers, start=2):
-        row = payroll_row(w, [r for r in recs if r["worker_id"] == w["id"]], paid_map.get(w["id"], 0))
+    all_rows = [payroll_row(w, [r for r in recs if r["worker_id"] == w["id"]], paid_map.get(w["id"], 0)) for w in workers]
+    for i, row in enumerate(all_rows, start=2):
         vals = [row["code"], row["name"], row["group"], row["days"], row["half_days"], row["rest_hours"], row["overtime_hours"], row["base_pay"], row["rest_pay"], row["overtime_pay"], row["gross"], row["paid"], row["remaining"]]
         for col, val in enumerate(vals, start=1):
             ws.cell(row=i, column=col, value=val)
+    if all_rows:
+        total_row = len(all_rows) + 2
+        ws.cell(row=total_row, column=2, value="GRAND TOTAL").font = Font(bold=True)
+        totals = [
+            (4, sum(r["days"] for r in all_rows)),
+            (5, sum(r["half_days"] for r in all_rows)),
+            (6, round(sum(r["rest_hours"] for r in all_rows), 2)),
+            (7, round(sum(r["overtime_hours"] for r in all_rows), 2)),
+            (8, sum(r["base_pay"] for r in all_rows)),
+            (9, sum(r["rest_pay"] for r in all_rows)),
+            (10, sum(r["overtime_pay"] for r in all_rows)),
+            (11, sum(r["gross"] for r in all_rows)),
+            (12, sum(r["paid"] for r in all_rows)),
+            (13, sum(r["remaining"] for r in all_rows)),
+        ]
+        for col, val in totals:
+            ws.cell(row=total_row, column=col, value=val).font = Font(bold=True)
     return xlsx_response(wb, f"gaji-{month}-periode{period}.xlsx")
 
 
@@ -800,7 +819,7 @@ async def export_attendance(month: str, period: int = 1, group: Optional[str] = 
 
 @api_router.get("/")
 async def root():
-    return {"message": "TukangGaji Pro API v2 (gaji per hari)"}
+    return {"message": "MandorApp API v2 (gaji per hari)"}
 
 
 # ---------- app setup ----------

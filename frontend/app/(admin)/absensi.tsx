@@ -219,7 +219,7 @@ export default function AbsensiScreen() {
         <View style={styles.switchRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.switchTitle}>Tanpa istirahat siang</Text>
-            <Text style={styles.muted}>11.30–13.00 dibayar +1,5 j × tarif lembur</Text>
+            <Text style={styles.muted}>11.30–12.30 dibayar +1 j × tarif lembur</Text>
           </View>
           <Switch testID="edit-no-rest-siang" value={fNoSiang} onValueChange={setFNoSiang} trackColor={{ true: colors.brandPrimary, false: colors.surfaceTertiary }} thumbColor={colors.onBrandPrimary} />
         </View>

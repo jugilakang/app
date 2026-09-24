@@ -204,7 +204,7 @@ export default function PekerjaScreen() {
             <Field testID="worker-overtime-input" label="LEMBUR PER JAM (RP)" value={fOvertime} onChangeText={(v) => setFOvertime(v.replace(/[^0-9]/g, ""))} placeholder="20000" keyboardType="numeric" />
           </View>
         </View>
-        <Text style={styles.rateHint}>Setengah hari otomatis dihitung ½ tarif harian. Tarif lembur juga dipakai untuk bonus tanpa istirahat (siang +1,5 j, sore +1 j).</Text>
+        <Text style={styles.rateHint}>Setengah hari otomatis dihitung ½ tarif harian. Tarif lembur juga dipakai untuk bonus tanpa istirahat (siang 11.30–12.30 dan sore 17.00–18.00, masing-masing +1 j).</Text>
         {!editing ? (
           <Field testID="worker-pin-input" label="PIN 4 DIGIT (KOSONGKAN = ACAK)" value={fPin} onChangeText={(v) => setFPin(v.replace(/[^0-9]/g, "").slice(0, 4))} placeholder="••••" keyboardType="number-pad" />
         ) : null}
