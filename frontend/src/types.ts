@@ -6,7 +6,7 @@ export type Worker = {
   name: string;
   phone: string;
   group: string;
-  hourly_rate: number;
+  daily_rate: number;
   overtime_rate: number;
   active: boolean;
   created_at: string;
@@ -16,6 +16,7 @@ export type WorkerWithPin = Worker & { pin: string };
 
 export type TapType = "masuk" | "istirahat" | "lembur" | "pulang";
 export type DayStatus = "belum" | "masuk" | "istirahat" | "lembur" | "pulang";
+export type DayType = "none" | "half" | "full";
 
 export type AttendanceEvent = { type: TapType; at: string };
 
@@ -35,9 +36,11 @@ export type AttendanceRecord = {
 };
 
 export type DayCalc = {
-  regular_hours: number;
-  lembur_hours: number;
+  day_type: DayType;
   base_pay: number;
+  rest_hours: number;
+  rest_pay: number;
+  lembur_hours: number;
   overtime_pay: number;
   total: number;
 };
@@ -56,12 +59,14 @@ export type PayrollRow = {
   code: string;
   name: string;
   group: string;
-  hourly_rate: number;
+  daily_rate: number;
   overtime_rate: number;
   days: number;
-  regular_hours: number;
+  half_days: number;
+  rest_hours: number;
   overtime_hours: number;
   base_pay: number;
+  rest_pay: number;
   overtime_pay: number;
   gross: number;
   paid: number;
@@ -126,9 +131,11 @@ export type WorkerPayroll = {
   start_date: string;
   end_date: string;
   days: number;
-  regular_hours: number;
+  half_days: number;
+  rest_hours: number;
   overtime_hours: number;
   base_pay: number;
+  rest_pay: number;
   overtime_pay: number;
   gross: number;
   paid: number;

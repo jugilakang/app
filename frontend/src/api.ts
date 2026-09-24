@@ -47,9 +47,9 @@ export const api = {
 
   // workers (admin)
   workers: (group?: string) => request<Worker[]>(`/workers${group && group !== "Semua" ? `?group=${encodeURIComponent(group)}` : ""}`),
-  createWorker: (body: { name: string; phone: string; group: string; hourly_rate: number; overtime_rate: number; pin?: string }) =>
+  createWorker: (body: { name: string; phone: string; group: string; daily_rate: number; overtime_rate: number; pin?: string }) =>
     request<WorkerWithPin>("/workers", { method: "POST", body: JSON.stringify(body) }),
-  updateWorker: (id: string, body: Partial<{ name: string; phone: string; group: string; hourly_rate: number; overtime_rate: number; active: boolean }>) =>
+  updateWorker: (id: string, body: Partial<{ name: string; phone: string; group: string; daily_rate: number; overtime_rate: number; active: boolean }>) =>
     request<Worker>(`/workers/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   resetPin: (id: string) => request<{ id: string; code: string; name: string; pin: string }>(`/workers/${id}/reset-pin`, { method: "POST" }),
   deleteWorker: (id: string) => request<{ deleted: boolean; deactivated: boolean }>(`/workers/${id}`, { method: "DELETE" }),

@@ -179,7 +179,7 @@ export default function GajiScreen() {
                   <View style={styles.rowInfo}>
                     <Text style={styles.rowName}>{row.name}</Text>
                     <Text style={styles.muted}>{row.code} · {row.group}</Text>
-                    <Text style={styles.rowMeta}>{row.days} hari · {fmtHours(row.regular_hours)} + {fmtHours(row.overtime_hours)} lembur</Text>
+                    <Text style={styles.rowMeta}>{row.days} hari penuh · {row.half_days} ½ hari · {fmtHours(row.overtime_hours)} lembur</Text>
                   </View>
                   <View style={styles.rowAmounts}>
                     <Text style={styles.rowGross}>{money(row.gross)}</Text>

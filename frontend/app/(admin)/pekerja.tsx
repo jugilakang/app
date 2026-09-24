@@ -34,7 +34,7 @@ export default function PekerjaScreen() {
   const [fName, setFName] = useState("");
   const [fPhone, setFPhone] = useState("");
   const [fGroup, setFGroup] = useState("Tukang");
-  const [fHourly, setFHourly] = useState("");
+  const [fDaily, setFDaily] = useState("");
   const [fOvertime, setFOvertime] = useState("");
   const [fPin, setFPin] = useState("");
 
@@ -53,7 +53,7 @@ export default function PekerjaScreen() {
   const openAdd = () => {
     setEditing(null);
     setSheetError("");
-    setFName(""); setFPhone(""); setFGroup("Tukang"); setFHourly(""); setFOvertime(""); setFPin("");
+    setFName(""); setFPhone(""); setFGroup("Tukang"); setFDaily(""); setFOvertime(""); setFPin("");
     setSheetOpen(true);
   };
 
@@ -61,13 +61,13 @@ export default function PekerjaScreen() {
     setEditing(worker);
     setSheetError("");
     setFName(worker.name); setFPhone(worker.phone); setFGroup(worker.group);
-    setFHourly(String(worker.hourly_rate)); setFOvertime(String(worker.overtime_rate)); setFPin("");
+    setFDaily(String(worker.daily_rate)); setFOvertime(String(worker.overtime_rate)); setFPin("");
     setSheetOpen(true);
   };
 
   const submit = async () => {
-    if (!fName.trim() || !fHourly || !fOvertime) {
-      setSheetError("Lengkapi nama, tarif per jam, dan tarif lembur");
+    if (!fName.trim() || !fDaily || !fOvertime) {
+      setSheetError("Lengkapi nama, tarif harian, dan tarif lembur");
       return;
     }
     try {
@@ -76,13 +76,13 @@ export default function PekerjaScreen() {
       if (editing) {
         await api.updateWorker(editing.id, {
           name: fName.trim(), phone: fPhone.trim(), group: fGroup,
-          hourly_rate: Number(fHourly), overtime_rate: Number(fOvertime),
+          daily_rate: Number(fDaily), overtime_rate: Number(fOvertime),
         });
         setBanner({ text: "Data pekerja diperbarui", tone: "success" });
       } else {
         const created = await api.createWorker({
           name: fName.trim(), phone: fPhone.trim(), group: fGroup,
-          hourly_rate: Number(fHourly), overtime_rate: Number(fOvertime),
+          daily_rate: Number(fDaily), overtime_rate: Number(fOvertime),
           ...(fPin.trim() ? { pin: fPin.trim() } : {}),
         });
         setCred({ name: created.name, code: created.code, pin: created.pin });
@@ -157,7 +157,7 @@ export default function PekerjaScreen() {
                 <View style={styles.cardInfo}>
                   <Text style={styles.workerName}>{worker.name}</Text>
                   <Text style={styles.muted}>{worker.code} · {worker.group}{worker.phone ? ` · ${worker.phone}` : ""}</Text>
-                  <Text style={styles.rateText}>{money(worker.hourly_rate)}/jam · Lembur {money(worker.overtime_rate)}/jam</Text>
+                  <Text style={styles.rateText}>{money(worker.daily_rate)}/hari (½ hari {money(worker.daily_rate / 2)}) · Lembur {money(worker.overtime_rate)}/jam</Text>
                 </View>
               </View>
               <View style={styles.cardActions}>
@@ -198,12 +198,13 @@ export default function PekerjaScreen() {
         </View>
         <View style={styles.rateGrid}>
           <View style={{ flex: 1 }}>
-            <Field testID="worker-hourly-input" label="TARIF PER JAM (RP)" value={fHourly} onChangeText={(v) => setFHourly(v.replace(/[^0-9]/g, ""))} placeholder="15000" keyboardType="numeric" />
+            <Field testID="worker-daily-input" label="TARIF HARIAN (RP)" value={fDaily} onChangeText={(v) => setFDaily(v.replace(/[^0-9]/g, ""))} placeholder="160000" keyboardType="numeric" />
           </View>
           <View style={{ flex: 1 }}>
             <Field testID="worker-overtime-input" label="LEMBUR PER JAM (RP)" value={fOvertime} onChangeText={(v) => setFOvertime(v.replace(/[^0-9]/g, ""))} placeholder="20000" keyboardType="numeric" />
           </View>
         </View>
+        <Text style={styles.rateHint}>Setengah hari otomatis dihitung ½ tarif harian. Tarif lembur juga dipakai untuk bonus tanpa istirahat (siang +1,5 j, sore +1 j).</Text>
         {!editing ? (
           <Field testID="worker-pin-input" label="PIN 4 DIGIT (KOSONGKAN = ACAK)" value={fPin} onChangeText={(v) => setFPin(v.replace(/[^0-9]/g, "").slice(0, 4))} placeholder="••••" keyboardType="number-pad" />
         ) : null}
@@ -239,4 +240,5 @@ const useStyles = makeStyles((colors) => ({
   groupChip: { height: 36, paddingHorizontal: 14, alignItems: "center", justifyContent: "center", borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceTertiary },
   groupChipText: { color: colors.onSurfaceTertiary, fontSize: 12, fontWeight: "700" },
   rateGrid: { flexDirection: "row", gap: 10 },
+  rateHint: { color: colors.muted, fontSize: 11, lineHeight: 16, marginBottom: 12 },
 }));

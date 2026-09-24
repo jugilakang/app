@@ -1,0 +1,37 @@
+{
+  "summary": "Full-stack re-test of TukangGaji Pro after CRITICAL model change: gaji pokok per HARI (bukan per jam). Backend: rewrote stale pytest suite (hourly_rate -> daily_rate, PIN 0907 -> 8366) - 29/29 passed. Math verified exactly: full day + no-rest siang&sore + lembur 2,5j = 160rb+50rb+50rb = Rp260.000; half-day pagi (pulang 11:45) = 80rb; half-day siang (masuk 13:00) = 80rb; full plain 07:00-17:00 = 160rb. Payroll periode 2 Sep 2026: TG001 260.000/100.000/160.000 with all breakdown fields (days, half_days, rest_hours, overtime_hours, base_pay, rest_pay, overtime_pay). Excel exports contain new columns (Hari Penuh, Setengah Hari, Jam No-Rest, Jam Lembur, Upah Harian/No-Rest/Lembur; Tipe Hari Penuh/Setengah) with correct TG001 values. Frontend: 17/17 admin UI checks + 17/17 worker UI checks passed - form Pekerja shows TARIF HARIAN + LEMBUR PER JAM, card shows 'Rp 160.000/hari (1/2 hari Rp 80.000) - Lembur Rp 20.000/jam', create-worker persists daily_rate correctly; absensi card/sheet labels correct; gaji summary & mandor payment (reduce sisa 160rb->150rb, cleanup restores) work; worker Beranda/Gaji/Absensi all show Rp 260.000 breakdown. REGRESSION: iteration_1 role-guard bug (worker reload on /gaji saw admin screen) is FIXED - redirects to worker area, no 403 banner. Login admin+worker, duplicate-name 409, reset PIN, role guards 401/403, logout all pass.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "server.py:34-35", "issue": "ADMIN_USERNAME/ADMIN_PASSWORD still use hardcoded fallbacks instead of failing fast on missing env (carried over from iteration_1)."},
+      {"endpoint": "POST /api/workers", "issue": "next_worker_code uses count+1 - theoretical race under concurrent creates (unique index protects data). Low risk."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "login.tsx:55", "issues": ["Stale copy: tagline still reads 'Absensi & gaji proyek, per jam, tanpa ribet.' - contradicts the new per-DAY wage model; should drop 'per jam'."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_tukanggaji_api.py", "/app/test_reports/pytest/pytest_results.xml", "/app/test_reports/ui/i2_admin_pekerja.png", "/app/test_reports/ui/i2_admin_absensi_edit.png", "/app/test_reports/ui/i2_admin_gaji.png", "/app/test_reports/ui/i2_worker_home.png", "/app/test_reports/ui/i2_worker_gaji.png", "/app/test_reports/ui/i2_worker_roleguard.png"],
+  "action_items": [
+    "Fix login tagline copy: remove 'per jam' from login.tsx:55 (model is now per hari).",
+    "Optional (carried over): fail fast when ADMIN_USERNAME/ADMIN_PASSWORD env missing; split server.py (833 lines) into routers."
+  ],
+  "critical_code_review_comments": [
+    "compute_day() implements the new rules correctly: base pay per day (full=daily_rate, half=daily_rate/2) determined by morning(<11:30) & afternoon(>=13:00 or no pulang) coverage; overtime_rate used ONLY for lembur (from 18:00) and no-rest bonuses (siang 1,5j / sore 1j). Verified against all 4 required scenarios.",
+    "No usage of hourly_rate remains in backend/frontend/types; Mongo _id excluded everywhere; pin_hash never leaked; Pydantic validation (daily_rate gt=0) rejects old-shape payloads with 422.",
+    "Role-guard fix confirmed in code: (admin)/_layout.tsx:18 and (worker)/_layout.tsx:18 redirect on wrong role - closes iteration_1 defect.",
+    "No deprecated Expo packages found (expo-av, expo-barcode-scanner, expo-background-fetch absent from package.json).",
+    "All screens use RN components + StyleSheet + testID on interactive elements; touch targets >=40-44px; tap buttons use aria-disabled correctly."
+  ],
+  "updated_files": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_tukanggaji_api.py"],
+  "success_rate": {"backend": "100% (29/29)", "frontend": "100% (34/34: 17 admin + 17 worker)"},
+  "seed_data_creation": "Created then fully cleaned up: pytest TEST worker 'TEST Pekerja Pytest' (Kuli, 160rb/20rb, PIN 4321) + its 4 attendance records (20-23 Sep) + 1 TEST langsung payment 5rb; UI TEST worker 'TEST UI Harian' (TG002, Kuli, 150rb/15rb) + 1 UI TEST mandor payment 10rb. Seeded TG001 (Budi Santoso), today's attendance Rp260.000, and Pak RT 100rb mandor payment verified intact after all runs (payroll 260.000/100.000/160.000).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend regression: cd /app && python3 -m pytest backend/tests/ -n0 -v. Credentials: admin/tukangpro123, worker TG001/8366. Public URL key in frontend/.env is EXPO_PUBLIC_BACKEND_URL. RN web gotchas: tab bar items are get_by_role('tab'); Sheet lower buttons need scroll_into_view_if_needed before click; Pressable disabled renders aria-disabled. Role guards now present in both group layouts. Only remaining nit: login tagline still says 'per jam'.",
+  "rca_of_issue": ""
+}

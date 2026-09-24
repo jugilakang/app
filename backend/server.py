@@ -31,21 +31,18 @@ db = client[os.environ["DB_NAME"]]
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALG = "HS256"
 JWT_DAYS = 30
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "tukangpro123")
+ADMIN_USERNAME = os.environ["ADMIN_USERNAME"]
+ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 
 WIB = timezone(timedelta(hours=7))
 GROUPS = ["Teknisi", "Besi", "Kayu", "Finishing", "Tukang", "Kuli"]
 
-# Shift structure (minutes from midnight, WIB)
-MORNING_END = 11 * 60 + 30      # 11:30 -> shift pagi 4.5 jam
-AFTERNOON_START = 13 * 60       # 13:00
-AFTERNOON_END = 17 * 60         # 17:00 -> shift siang 4 jam
+# Batas shift (menit dari tengah malam, WIB)
+MORNING_END = 11 * 60 + 30      # 11:30 -> akhir shift pagi
+AFTERNOON_START = 13 * 60       # 13:00 -> mulai shift siang
 EVENING_REST_END = 18 * 60      # 18:00 -> lembur mulai
-MORNING_HOURS = 4.5
-AFTERNOON_HOURS = 4.0
-LUNCH_REST_HOURS = 1.5
-EVENING_REST_HOURS = 1.0
+LUNCH_REST_HOURS = 1.5          # 11.30-13.00, dibayar bila no_rest_siang
+EVENING_REST_HOURS = 1.0        # 17.00-18.00, dibayar bila no_rest_sore
 
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer = HTTPBearer(auto_error=False)
@@ -95,38 +92,40 @@ def period_bounds(month: str, period: int):
     return f"{month}-16", f"{month}-{last:02d}"
 
 
-def compute_day(rec: dict, hourly_rate: float, overtime_rate: float) -> dict:
-    """Hitung jam & upah satu hari dari catatan absensi.
+def compute_day(rec: dict, daily_rate: float, overtime_rate: float) -> dict:
+    """Hitung upah satu hari.
 
-    Shift pagi 07.00-11.30 (4.5j), istirahat siang 11.30-13.00 (1.5j, dibayar bila
-    no_rest_siang), shift siang 13.00-17.00 (4j), istirahat sore 17.00-18.00 (1j,
-    dibayar bila no_rest_sore), lembur mulai 18.00 per jam.
+    Gaji pokok dihitung per HARI: hari penuh = tarif harian, setengah hari =
+    setengah tarif harian. Tarif per jam (overtime_rate) HANYA dipakai untuk
+    lembur (mulai 18.00) dan bonus tanpa istirahat siang (1,5 j) / sore (1 j).
     """
-    regular = 0.0
+    day_type = "none"
     masuk = rec.get("masuk_at")
     pulang = rec.get("pulang_at")
+    morning = afternoon = False
     if masuk:
         m_in = to_min(masuk)
         m_out = to_min(pulang) if pulang else None
         morning = m_in < MORNING_END
         afternoon = (m_in >= MORNING_END) or (m_out is None) or (m_out >= AFTERNOON_START)
-        if morning:
-            regular += MORNING_HOURS
-        if afternoon:
-            regular += AFTERNOON_HOURS
-        if rec.get("no_rest_siang") and morning and afternoon:
-            regular += LUNCH_REST_HOURS
-        if rec.get("no_rest_sore") and afternoon:
-            regular += EVENING_REST_HOURS
+        day_type = "full" if (morning and afternoon) else "half"
+    base_pay = round(daily_rate if day_type == "full" else (daily_rate / 2 if day_type == "half" else 0))
+    rest_hours = 0.0
+    if rec.get("no_rest_siang") and morning and afternoon:
+        rest_hours += LUNCH_REST_HOURS
+    if rec.get("no_rest_sore") and afternoon:
+        rest_hours += EVENING_REST_HOURS
     lembur_hours = float(rec.get("lembur_hours", 0) or 0) if rec.get("lembur") else 0.0
-    base = round(regular * hourly_rate)
-    ot = round(lembur_hours * overtime_rate)
+    rest_pay = round(rest_hours * overtime_rate)
+    ot_pay = round(lembur_hours * overtime_rate)
     return {
-        "regular_hours": round(regular, 2),
+        "day_type": day_type,
+        "base_pay": base_pay,
+        "rest_hours": round(rest_hours, 2),
+        "rest_pay": rest_pay,
         "lembur_hours": lembur_hours,
-        "base_pay": base,
-        "overtime_pay": ot,
-        "total": base + ot,
+        "overtime_pay": ot_pay,
+        "total": base_pay + rest_pay + ot_pay,
     }
 
 
@@ -246,7 +245,7 @@ class WorkerCreate(BaseModel):
     name: str = Field(min_length=2, max_length=80)
     phone: str = Field(default="", max_length=30)
     group: str
-    hourly_rate: float = Field(gt=0)
+    daily_rate: float = Field(gt=0)
     overtime_rate: float = Field(gt=0)
     pin: Optional[str] = Field(default=None, pattern=r"^\d{4}$")
 
@@ -255,7 +254,7 @@ class WorkerUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=80)
     phone: Optional[str] = Field(default=None, max_length=30)
     group: Optional[str] = None
-    hourly_rate: Optional[float] = Field(default=None, gt=0)
+    daily_rate: Optional[float] = Field(default=None, gt=0)
     overtime_rate: Optional[float] = Field(default=None, gt=0)
     active: Optional[bool] = None
 
@@ -304,7 +303,7 @@ async def create_worker(body: WorkerCreate, user=Depends(require_admin)):
         "name_lower": name_lower,
         "phone": body.phone.strip(),
         "group": body.group,
-        "hourly_rate": body.hourly_rate,
+        "daily_rate": body.daily_rate,
         "overtime_rate": body.overtime_rate,
         "pin_hash": pwd_ctx.hash(pin),
         "active": True,
@@ -382,7 +381,7 @@ def attendance_row(worker: dict, rec: Optional[dict]) -> dict:
         "worker": public_worker(worker),
         "record": clean(rec) if rec else None,
         "status": day_status(rec),
-        "calc": compute_day(rec, worker["hourly_rate"], worker["overtime_rate"]) if rec and rec.get("masuk_at") else None,
+        "calc": compute_day(rec, worker["daily_rate"], worker["overtime_rate"]) if rec and rec.get("masuk_at") else None,
     }
 
 
@@ -498,7 +497,7 @@ async def get_dashboard(date: str = Query(default=None), user=Depends(require_ad
     for wid, r in rec_map.items():
         w = wmap.get(wid)
         if w and r.get("masuk_at"):
-            est += compute_day(r, w["hourly_rate"], w["overtime_rate"])["total"]
+            est += compute_day(r, w["daily_rate"], w["overtime_rate"])["total"]
     groups = []
     for g in GROUPS:
         members = [w for w in workers if w["group"] == g]
@@ -533,30 +532,36 @@ class PaymentCreate(BaseModel):
 
 
 def payroll_row(worker: dict, recs: list, paid: float) -> dict:
-    days = 0
-    reg = ot = base = otpay = 0.0
+    days = half_days = 0
+    rest = ot = base = rest_pay = ot_pay = 0.0
     for r in recs:
         if not r.get("masuk_at"):
             continue
-        c = compute_day(r, worker["hourly_rate"], worker["overtime_rate"])
-        days += 1
-        reg += c["regular_hours"]
+        c = compute_day(r, worker["daily_rate"], worker["overtime_rate"])
+        if c["day_type"] == "full":
+            days += 1
+        elif c["day_type"] == "half":
+            half_days += 1
+        rest += c["rest_hours"]
         ot += c["lembur_hours"]
         base += c["base_pay"]
-        otpay += c["overtime_pay"]
-    gross = base + otpay
+        rest_pay += c["rest_pay"]
+        ot_pay += c["overtime_pay"]
+    gross = base + rest_pay + ot_pay
     return {
         "worker_id": worker["id"],
         "code": worker["code"],
         "name": worker["name"],
         "group": worker["group"],
-        "hourly_rate": worker["hourly_rate"],
+        "daily_rate": worker["daily_rate"],
         "overtime_rate": worker["overtime_rate"],
         "days": days,
-        "regular_hours": round(reg, 2),
+        "half_days": half_days,
+        "rest_hours": round(rest, 2),
         "overtime_hours": round(ot, 2),
         "base_pay": round(base),
-        "overtime_pay": round(otpay),
+        "rest_pay": round(rest_pay),
+        "overtime_pay": round(ot_pay),
         "gross": round(gross),
         "paid": round(paid),
         "remaining": round(max(gross - paid, 0)),
@@ -661,7 +666,7 @@ async def worker_attendance(month: str = Query(..., pattern=r"^\d{4}-\d{2}$"), u
         rows.append({
             "record": clean(r),
             "status": day_status(r),
-            "calc": compute_day(r, worker["hourly_rate"], worker["overtime_rate"]) if r.get("masuk_at") else None,
+            "calc": compute_day(r, worker["daily_rate"], worker["overtime_rate"]) if r.get("masuk_at") else None,
         })
     return {"month": month, "rows": rows}
 
@@ -693,9 +698,11 @@ async def worker_payroll(month: str = Query(...), period: int = Query(default=1,
         "start_date": start,
         "end_date": end,
         "days": row["days"],
-        "regular_hours": row["regular_hours"],
+        "half_days": row["half_days"],
+        "rest_hours": row["rest_hours"],
         "overtime_hours": row["overtime_hours"],
         "base_pay": row["base_pay"],
+        "rest_pay": row["rest_pay"],
         "overtime_pay": row["overtime_pay"],
         "gross": row["gross"],
         "paid": round(paid),
@@ -747,11 +754,12 @@ async def export_payroll(month: str, period: int = 1, group: Optional[str] = Non
     wb = Workbook()
     ws = wb.active
     ws.title = "Gaji"
-    headers = ["Kode", "Nama", "Grup", "Hari Kerja", "Jam Reguler", "Jam Lembur", "Upah Pokok (Rp)", "Upah Lembur (Rp)", "Total (Rp)", "Terbayar (Rp)", "Sisa (Rp)"]
-    style_sheet(ws, headers, [10, 26, 12, 11, 12, 11, 16, 16, 16, 16, 16])
+    headers = ["Kode", "Nama", "Grup", "Hari Penuh", "Setengah Hari", "Jam No-Rest", "Jam Lembur", "Upah Harian (Rp)", "Upah No-Rest (Rp)", "Upah Lembur (Rp)", "Total (Rp)", "Terbayar (Rp)", "Sisa (Rp)"]
+    style_sheet(ws, headers, [10, 26, 12, 10, 12, 11, 11, 16, 16, 16, 16, 16, 16])
     for i, w in enumerate(workers, start=2):
         row = payroll_row(w, [r for r in recs if r["worker_id"] == w["id"]], paid_map.get(w["id"], 0))
-        for col, val in enumerate([row["code"], row["name"], row["group"], row["days"], row["regular_hours"], row["overtime_hours"], row["base_pay"], row["overtime_pay"], row["gross"], row["paid"], row["remaining"]], start=1):
+        vals = [row["code"], row["name"], row["group"], row["days"], row["half_days"], row["rest_hours"], row["overtime_hours"], row["base_pay"], row["rest_pay"], row["overtime_pay"], row["gross"], row["paid"], row["remaining"]]
+        for col, val in enumerate(vals, start=1):
             ws.cell(row=i, column=col, value=val)
     return xlsx_response(wb, f"gaji-{month}-periode{period}.xlsx")
 
@@ -768,18 +776,20 @@ async def export_attendance(month: str, period: int = 1, group: Optional[str] = 
     wb = Workbook()
     ws = wb.active
     ws.title = "Absensi"
-    headers = ["Tanggal", "Kode", "Nama", "Grup", "Masuk", "Pulang", "Tanpa Istirahat Siang", "Tanpa Istirahat Sore", "Jam Reguler", "Jam Lembur", "Catatan Lembur", "Upah Hari (Rp)"]
-    style_sheet(ws, headers, [12, 10, 26, 12, 8, 8, 12, 12, 11, 11, 24, 16])
+    headers = ["Tanggal", "Kode", "Nama", "Grup", "Masuk", "Pulang", "Tipe Hari", "Tanpa Istirahat Siang", "Tanpa Istirahat Sore", "Jam Lembur", "Catatan Lembur", "Upah Hari (Rp)"]
+    style_sheet(ws, headers, [12, 10, 26, 12, 8, 8, 11, 12, 12, 11, 24, 16])
     i = 2
     for r in recs:
         w = wmap.get(r["worker_id"])
         if not w:
             continue
-        calc = compute_day(r, w["hourly_rate"], w["overtime_rate"]) if r.get("masuk_at") else None
+        calc = compute_day(r, w["daily_rate"], w["overtime_rate"]) if r.get("masuk_at") else None
+        day_label = "-" if not calc else ("Penuh" if calc["day_type"] == "full" else "Setengah")
         vals = [
             r["date"], w["code"], w["name"], w["group"], r.get("masuk_at") or "-", r.get("pulang_at") or "-",
+            day_label,
             "Ya" if r.get("no_rest_siang") else "Tidak", "Ya" if r.get("no_rest_sore") else "Tidak",
-            calc["regular_hours"] if calc else 0, calc["lembur_hours"] if calc else 0,
+            calc["lembur_hours"] if calc else 0,
             r.get("lembur_note") or "", calc["total"] if calc else 0,
         ]
         for col, val in enumerate(vals, start=1):
@@ -790,7 +800,7 @@ async def export_attendance(month: str, period: int = 1, group: Optional[str] = 
 
 @api_router.get("/")
 async def root():
-    return {"message": "TukangGaji Pro API v2"}
+    return {"message": "TukangGaji Pro API v2 (gaji per hari)"}
 
 
 # ---------- app setup ----------

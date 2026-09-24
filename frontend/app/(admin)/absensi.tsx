@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
 import { Avatar, Banner, ChipRow, EmptyState, Field, PrimaryButton, ScreenTitle, Sheet } from "@/src/components/ui";
-import { addDays, fmtDateID, fmtHours, money, todayISO } from "@/src/format";
+import { addDays, dayPartLabel, fmtDateID, fmtHours, money, todayISO } from "@/src/format";
 import { makeStyles, useTheme } from "@/src/theme";
 import type { AttendanceResponse, AttendanceRow, DayStatus, TapType } from "@/src/types";
 
@@ -177,13 +177,12 @@ export default function AbsensiScreen() {
                   <Text style={styles.timeText}>Masuk {row.record.masuk_at}</Text>
                   <MaterialDesignIcons name="arrow-right" size={13} color={colors.muted} />
                   <Text style={styles.timeText}>{row.record.pulang_at ? `Pulang ${row.record.pulang_at}` : "Belum pulang"}</Text>
-                  {row.record.lembur ? <Text style={styles.lemburText}>+ Lembur {fmtHours(row.calc?.lembur_hours ?? 0)}</Text> : null}
                 </View>
               ) : null}
 
               {row.calc ? (
                 <Text style={styles.calcText} testID={`attendance-calc-${row.worker.id}`}>
-                  {fmtHours(row.calc.regular_hours)} reguler · {money(row.calc.total)}
+                  {dayPartLabel(row.calc)} · {money(row.calc.total)}
                 </Text>
               ) : null}
 
@@ -220,21 +219,21 @@ export default function AbsensiScreen() {
         <View style={styles.switchRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.switchTitle}>Tanpa istirahat siang</Text>
-            <Text style={styles.muted}>11.30–13.00 ikut dibayar (+1,5 j)</Text>
+            <Text style={styles.muted}>11.30–13.00 dibayar +1,5 j × tarif lembur</Text>
           </View>
           <Switch testID="edit-no-rest-siang" value={fNoSiang} onValueChange={setFNoSiang} trackColor={{ true: colors.brandPrimary, false: colors.surfaceTertiary }} thumbColor={colors.onBrandPrimary} />
         </View>
         <View style={styles.switchRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.switchTitle}>Tanpa istirahat sore</Text>
-            <Text style={styles.muted}>17.00–18.00 ikut dibayar (+1 j)</Text>
+            <Text style={styles.muted}>17.00–18.00 dibayar +1 j × tarif lembur</Text>
           </View>
           <Switch testID="edit-no-rest-sore" value={fNoSore} onValueChange={setFNoSore} trackColor={{ true: colors.brandPrimary, false: colors.surfaceTertiary }} thumbColor={colors.onBrandPrimary} />
         </View>
         <View style={styles.switchRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.switchTitle}>Lembur</Text>
-            <Text style={styles.muted}>Dihitung per jam mulai 18.00</Text>
+            <Text style={styles.muted}>Per jam mulai 18.00 × tarif lembur</Text>
           </View>
           <Switch testID="edit-lembur" value={fLembur} onValueChange={setFLembur} trackColor={{ true: colors.brandPrimary, false: colors.surfaceTertiary }} thumbColor={colors.onBrandPrimary} />
         </View>
@@ -249,7 +248,7 @@ export default function AbsensiScreen() {
 
         {editing?.calc ? (
           <View style={styles.calcBox}>
-            <Text style={styles.calcBoxText}>Perkiraan hari ini: {fmtHours(editing.calc.regular_hours)} reguler + {fmtHours(editing.calc.lembur_hours)} lembur</Text>
+            <Text style={styles.calcBoxText}>Perkiraan hari ini: {dayPartLabel(editing.calc)}</Text>
             <Text style={styles.calcBoxValue}>{money(editing.calc.total)}</Text>
           </View>
         ) : null}
@@ -281,7 +280,6 @@ const useStyles = makeStyles((colors) => ({
   editButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center", borderRadius: 10, backgroundColor: colors.surfaceTertiary },
   timesRow: { flexDirection: "row", alignItems: "center", gap: 7, flexWrap: "wrap" },
   timeText: { color: colors.onSurfaceTertiary, fontSize: 12, fontWeight: "600" },
-  lemburText: { color: colors.brandSecondary, fontSize: 12, fontWeight: "700" },
   calcText: { color: colors.onSurfaceSecondary, fontSize: 12, fontWeight: "700" },
   tapRow: { flexDirection: "row", gap: 7 },
   tapButton: { flex: 1, minHeight: 44, borderRadius: 10, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceTertiary, alignItems: "center", justifyContent: "center", gap: 3 },

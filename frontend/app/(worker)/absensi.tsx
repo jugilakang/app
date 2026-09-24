@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
 import { Banner, EmptyState, ScreenTitle } from "@/src/components/ui";
-import { fmtDateID, fmtHours, money, monthLabel, monthOf, shiftMonth, todayISO } from "@/src/format";
+import { dayPartLabel, fmtDateID, money, monthLabel, monthOf, shiftMonth, todayISO } from "@/src/format";
 import { makeStyles, useTheme } from "@/src/theme";
 import type { DayStatus, WorkerAttendance } from "@/src/types";
 
@@ -78,9 +78,7 @@ export default function WorkerAbsensi() {
               </View>
               {row.calc ? (
                 <View style={styles.calcRow}>
-                  <Text style={styles.calcMeta}>
-                    {fmtHours(row.calc.regular_hours)} reguler{row.calc.lembur_hours > 0 ? ` + ${fmtHours(row.calc.lembur_hours)} lembur` : ""}
-                  </Text>
+                  <Text style={styles.calcMeta}>{dayPartLabel(row.calc)}</Text>
                   <Text style={styles.calcTotal}>{money(row.calc.total)}</Text>
                 </View>
               ) : null}

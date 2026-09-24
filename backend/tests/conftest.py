@@ -47,25 +47,28 @@ def admin_client(api_client, admin_token):
 
 @pytest.fixture(scope="session")
 def worker_token(api_client, base_url):
-    resp = api_client.post(f"{base_url}/api/auth/worker-login", json={"code": "TG001", "pin": "0907"})
+    resp = api_client.post(f"{base_url}/api/auth/worker-login", json={"code": "TG001", "pin": "8366"})
     assert resp.status_code == 200, f"Worker login failed: {resp.text}"
     return resp.json()["access_token"]
 
 
 @pytest.fixture(scope="module")
 def test_worker(admin_client, base_url):
-    """Create a TEST_ worker, yield it, delete after module. Tolerates xdist duplicates."""
-    payload = {"name": "TEST Pekerja Pytest", "phone": "", "group": "Kuli", "hourly_rate": 15000, "overtime_rate": 20000, "pin": "4321"}
+    """Create a TEST_ worker (daily_rate model), yield it, delete after module. Tolerates xdist duplicates."""
+    payload = {"name": "TEST Pekerja Pytest", "phone": "", "group": "Kuli", "daily_rate": 160000, "overtime_rate": 20000, "pin": "4321"}
     resp = admin_client.post(f"{base_url}/api/workers", json=payload)
     if resp.status_code == 409:
-        # another xdist worker already created it; reuse
         existing = [w for w in admin_client.get(f"{base_url}/api/workers").json() if w["name"] == payload["name"]]
         worker = existing[0]
-        # ensure pin known
-        admin_client.post(f"{base_url}/api/workers/{worker['id']}/reset-pin")
         yield worker
         return
     assert resp.status_code == 201, resp.text
     worker = resp.json()
     yield worker
+    # cleanup: delete any attendance of this worker, then the worker
+    for day in ["2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23"]:
+        rows = admin_client.get(f"{base_url}/api/attendance?date={day}").json().get("rows", [])
+        for r in rows:
+            if r["worker"]["id"] == worker["id"] and r["record"]:
+                admin_client.delete(f"{base_url}/api/attendance/{r['record']['id']}")
     admin_client.delete(f"{base_url}/api/workers/{worker['id']}")

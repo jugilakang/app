@@ -65,7 +65,7 @@ export default function WorkerGaji() {
           <View style={styles.hero} testID="worker-gross-card">
             <Text style={styles.heroLabel}>TOTAL PERIODE {periodDates(month, period).label.toUpperCase()}</Text>
             <Text style={styles.heroValue}>{money(data.gross)}</Text>
-            <Text style={styles.heroHint}>{data.days} hari kerja · {fmtHours(data.regular_hours)} reguler · {fmtHours(data.overtime_hours)} lembur</Text>
+            <Text style={styles.heroHint}>{data.days} hari penuh · {data.half_days} setengah hari · {fmtHours(data.overtime_hours)} lembur</Text>
           </View>
 
           <View style={styles.splitRow}>
@@ -83,7 +83,8 @@ export default function WorkerGaji() {
 
           <View style={styles.card}>
             <Text style={styles.cardLabel}>RINCIAN</Text>
-            <View style={styles.detailRow}><Text style={styles.muted}>Upah reguler ({fmtHours(data.regular_hours)})</Text><Text style={styles.detailValue}>{money(data.base_pay)}</Text></View>
+            <View style={styles.detailRow}><Text style={styles.muted}>Upah harian ({data.days} hari + {data.half_days} ½ hari)</Text><Text style={styles.detailValue}>{money(data.base_pay)}</Text></View>
+            <View style={styles.detailRow}><Text style={styles.muted}>Bonus no-rest ({fmtHours(data.rest_hours)})</Text><Text style={styles.detailValue}>{money(data.rest_pay)}</Text></View>
             <View style={styles.detailRow}><Text style={styles.muted}>Upah lembur ({fmtHours(data.overtime_hours)})</Text><Text style={styles.detailValue}>{money(data.overtime_pay)}</Text></View>
             <View style={[styles.detailRow, styles.detailTotal]}><Text style={styles.detailTotalLabel}>Total</Text><Text style={styles.detailTotalValue}>{money(data.gross)}</Text></View>
           </View>

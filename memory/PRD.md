@@ -23,9 +23,9 @@ Pivot V2 (user, messages 74/77): peran Admin + Pekerja (view-only, login Kode+PI
 
 ## Terimplementasi (24 Sep 2026)
 - V1 (awal): proyek/pekerja/absensi harian sederhana + gaji harian (digantikan V2).
-- V2 penuh: auth 2 peran (admin seeded + worker code/PIN, reset PIN, duplikat nama 409), dasbor admin (estimasi upah, statistik, kehadiran per grup, aktivitas), absensi tap + edit/hapus + toggle tanpa istirahat siang/sore + lembur otomatis/manual + catatan, payroll per jam periode 1–15 / 16–akhir, pembayaran multi-pekerja via mandor/langsung + riwayat, ekspor .xlsx (gaji & absensi, unduh web / share sheet native), portal pekerja read-only (beranda, absensi bulanan, gaji per periode + pembayaran diterima).
-- Perhitungan terverifikasi: 07.00–20.30 tanpa istirahat dua-duanya + lembur → 11 j reguler + 2,5 j lembur = Rp 215.000 (tarif 15rb/20rb).
-- Testing: 25/25 pytest backend PASS; semua alur UI PASS (testing agent, iteration_1). Bug guard role & error banner dalam sheet diperbaiki.
+- V2 penuh: auth 2 peran (admin seeded + worker code/PIN, reset PIN, duplikat nama 409), dasbor admin (estimasi upah, statistik, kehadiran per grup, aktivitas), absensi tap + edit/hapus + toggle tanpa istirahat siang/sore + lembur otomatis/manual + catatan, payroll periode 1–15 / 16–akhir, pembayaran multi-pekerja via mandor/langsung + riwayat, ekspor .xlsx (gaji & absensi, unduh web / share sheet native), portal pekerja read-only (beranda, absensi bulanan, gaji per periode + pembayaran diterima).
+- REVISI MODEL GAJI (24 Sep): gaji pokok PER HARI — penuh = tarif harian, setengah = ½ tarif harian; tarif per jam (overtime_rate) hanya untuk lembur (mulai 18.00) & bonus no-rest siang (1,5 j) / sore (1 j). Field worker: daily_rate + overtime_rate (migrasi hourly_rate×8,5 → daily_rate sudah dijalankan). Terverifikasi: full+no-rest×2+lembur 2,5j = 160rb+50rb+50rb = Rp260.000; ½ hari = Rp80.000.
+- Testing: iteration_1 25/25 backend + UI PASS; iteration_2 (model per hari) 29/29 backend + 34/34 UI PASS.
 
 ## Backlog
 - P0: (kosong)

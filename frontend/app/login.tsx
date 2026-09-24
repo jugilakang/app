@@ -52,7 +52,7 @@ export default function LoginScreen() {
         <View style={styles.brandRow}>
           <View style={styles.brandIcon}><MaterialDesignIcons name="account-hard-hat" size={30} color={colors.onBrandPrimary} /></View>
           <Text style={styles.brand}>TukangGaji <Text style={{ color: colors.brandPrimary }}>PRO</Text></Text>
-          <Text style={styles.tagline}>Absensi & gaji proyek, per jam, tanpa ribet.</Text>
+          <Text style={styles.tagline}>Absensi & gaji harian proyek, tanpa ribet.</Text>
         </View>
 
         <View style={styles.card}>

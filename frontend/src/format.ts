@@ -53,3 +53,13 @@ export const fmtHours = (hours: number) => `${String(Math.round(hours * 10) / 10
 
 export const initials = (name: string) =>
   name.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+
+/** Ringkas komponen upah satu hari: "1 hari penuh + 1,5 j no-rest + 2,5 j lembur". */
+export function dayPartLabel(calc: { day_type: string; rest_hours: number; lembur_hours: number }): string {
+  const parts: string[] = [];
+  if (calc.day_type === "full") parts.push("1 hari penuh");
+  else if (calc.day_type === "half") parts.push("½ hari");
+  if (calc.rest_hours > 0) parts.push(`+ ${fmtHours(calc.rest_hours)} no-rest`);
+  if (calc.lembur_hours > 0) parts.push(`+ ${fmtHours(calc.lembur_hours)} lembur`);
+  return parts.join(" ") || "Belum ada upah";
+}

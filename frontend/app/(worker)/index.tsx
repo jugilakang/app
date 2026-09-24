@@ -112,8 +112,8 @@ export default function WorkerHome() {
             <Text style={styles.cardLabel}>PERIODE {periodInfo.label.toUpperCase()} · {monthLabel(month).toUpperCase()}</Text>
             <Text style={styles.periodGross}>{money(payroll?.gross ?? 0)}</Text>
             <View style={styles.periodGrid}>
-              <View style={styles.periodItem}><Text style={styles.periodValue}>{payroll?.days ?? 0}</Text><Text style={styles.muted}>Hari kerja</Text></View>
-              <View style={styles.periodItem}><Text style={styles.periodValue}>{fmtHours(payroll?.regular_hours ?? 0)}</Text><Text style={styles.muted}>Jam reguler</Text></View>
+              <View style={styles.periodItem}><Text style={styles.periodValue}>{payroll?.days ?? 0}</Text><Text style={styles.muted}>Hari penuh</Text></View>
+              <View style={styles.periodItem}><Text style={styles.periodValue}>{payroll?.half_days ?? 0}</Text><Text style={styles.muted}>½ hari</Text></View>
               <View style={styles.periodItem}><Text style={styles.periodValue}>{fmtHours(payroll?.overtime_hours ?? 0)}</Text><Text style={styles.muted}>Jam lembur</Text></View>
             </View>
             <View style={styles.payLine}>
@@ -125,14 +125,14 @@ export default function WorkerHome() {
           <View style={styles.card}>
             <Text style={styles.cardLabel}>TARIF KAMU</Text>
             <View style={styles.rateRow}>
-              <MaterialDesignIcons name="cash-clock" size={18} color={colors.brandPrimary} />
-              <Text style={styles.rateText}>Reguler {money(worker?.hourly_rate ?? 0)}/jam</Text>
+              <MaterialDesignIcons name="calendar-check-outline" size={18} color={colors.brandPrimary} />
+              <Text style={styles.rateText}>Harian {money(worker?.daily_rate ?? 0)} · ½ hari {money((worker?.daily_rate ?? 0) / 2)}</Text>
             </View>
             <View style={styles.rateRow}>
               <MaterialDesignIcons name="clock-plus-outline" size={18} color={colors.brandSecondary} />
               <Text style={styles.rateText}>Lembur {money(worker?.overtime_rate ?? 0)}/jam (mulai 18.00)</Text>
             </View>
-            <Text style={styles.rateHint}>Shift pagi 07.00–11.30 · shift siang 13.00–17.00. Istirahat bisa dibayar bila admin menandai tanpa istirahat.</Text>
+            <Text style={styles.rateHint}>Gaji pokok dihitung per hari. Bonus tanpa istirahat (siang +1,5 j, sore +1 j) memakai tarif lembur per jam.</Text>
           </View>
         </ScrollView>
       )}
