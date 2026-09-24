@@ -1,0 +1,38 @@
+{
+  "summary": "Full-stack test of TukangGaji Pro V2 (FastAPI + Expo web preview). Backend: 25/25 pytest passed (auth admin+worker, worker CRUD + duplicate-name 409, attendance tap flow + edit with no-rest toggles = Rp 215.000, payroll period 2 TG001 215.000/100.000/115.000, mandor payment validation, role guards 401/403, xlsx exports valid PK zip). Frontend: ~45 UI checks across login, admin dashboard, pekerja CRUD (create with green credential panel TG002/PIN, duplicate rejection, edit rates, reset PIN 0916 + login verified), absensi tap Masuk>Istirahat>Lembur>Pulang with correct state machine and aria-disabled, edit sheet with toggles (11j reguler, Rp 215.000) and delete record, gaji month/period/group navigation, multi-select pay bar, mandor payment (name required 422, recorded, history, deleted), Excel downloads confirmed (gaji-2026-09-periode2.xlsx, absensi-2026-09-periode2.xlsx), worker view-only screens all correct (no edit/tap controls), logout both roles. One real frontend bug found: missing role guard on web reload of sub-routes. Test data cleaned up; seeded TG001 data verified intact.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/workers", "issue": "next_worker_code uses count+1; concurrent creates could race (unique index on code protects data, request would 500). Low risk at this scale."},
+      {"endpoint": "server.py:34-35", "issue": "ADMIN_USERNAME/ADMIN_PASSWORD use hardcoded fallbacks instead of failing fast on missing env."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "PekerjaScreen / Banner vs Sheet", "issue": "Duplicate-name error banner renders behind the open bottom-sheet overlay (dimmed, partially obscured). Visible but UX could be improved by showing error inside the sheet.", "testID": "worker-banner", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Web reload / deep link on sub-route", "issue": "No role-based route guard in (admin)/_layout.tsx and (worker)/_layout.tsx. Reloading /gaji as worker TG001 rendered the ADMIN Gaji screen (Rekap & bayar, admin tabs) which called admin APIs and showed 403 'Khusus admin' banner - broken mixed state. Expo Router resolves /gaji to the first matching group ((admin)) regardless of session role. Root '/' Gate redirect works correctly.", "affected_testIDs": ["payroll-banner", "worker-gross-card"]}
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_tukanggaji_api.py", "/app/test_reports/pytest/pytest_results.xml", "/app/test_reports/ui/admin_dashboard.png", "/app/test_reports/ui/admin_pekerja_cred.png", "/app/test_reports/ui/admin_absensi_toggles.png", "/app/test_reports/ui/admin_gaji_paid.png", "/app/test_reports/ui/worker_gaji.png", "/app/test_reports/ui/worker_absensi.png", "/app/test_reports/ui/worker_new_home.png"],
+  "action_items": [
+    "Add role guard: in (admin)/_layout.tsx redirect to /(worker) or /login when session.role !== 'admin', and mirror in (worker)/_layout.tsx, so web reload/deep-link on shared paths (/absensi, /gaji) cannot render the wrong role's screens.",
+    "Optional: surface form errors (e.g. duplicate name 409) inside the bottom sheet instead of the page-level banner hidden behind the sheet overlay.",
+    "Optional: split server.py (822 lines) into routers (auth, workers, attendance, payroll, export)."
+  ],
+  "critical_code_review_comments": [
+    "Backend solid: JWT role guards enforced (worker->admin 403, no-token 401, export token query param admin-only), Mongo _id excluded everywhere, pin_hash never leaked, Pydantic validation incl. PIN regex, duplicate name check case-insensitive, soft-delete worker when attendance exists.",
+    "Payroll math verified end-to-end: 07:00-20:30 with both no-rest toggles = 11j reguler x 15.000 + 2,5j lembur x 20.000 = Rp 215.000; without toggles 8,5j = Rp 177.500.",
+    "Note: pytest -n auto (xdist default in env) can double-run module fixtures; run with -n0 (tests pass 25/25 with -n0; fixture tolerates duplicates)."
+  ],
+  "updated_files": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_tukanggaji_api.py"],
+  "success_rate": {"backend": "100% (25/25)", "frontend": "96% (all core flows pass; 1 route-guard defect + 1 minor banner-behind-sheet issue)"},
+  "seed_data_creation": "Created then fully cleaned up: worker TG002 'TEST UI Saputra' (Besi, 15000/20000, PIN 1234 -> reset 0916), its attendance record, and a TEST payment (mandor Pak Test 5000). Seeded TG001 Budi Santoso, today's attendance (215.000) and Pak RT 100.000 payment verified intact after cleanup.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend regression: cd /app && python3 -m pytest backend/tests/ -n0 -v. Credentials: admin/tukangpro123, worker TG001/0907. Public URL in frontend/.env is EXPO_PUBLIC_BACKEND_URL (not EXPO_BACKEND_URL). RN web gotchas for Playwright: Pressable disabled renders aria-disabled (is_disabled() won't work); Switch testID element has no aria-checked - use presence of conditional fields as state signal; sheet content needs scrollIntoView before clicking lower elements; tab bar items are role=tab links (use get_by_text exact). Known open defect: web reload on /gaji or /absensi renders admin screens for worker sessions (no role guard in group layouts).",
+  "rca_of_issue": "Bug: worker session reloading web on /gaji sees admin Gaji screen with 403 'Khusus admin'. Repro: login as TG001/0907, open Gaji tab, page.reload(). Root cause: app/index.tsx Gate redirects by role only for '/', but (admin) and (worker) groups share identical sub-route names (absensi, gaji); Expo Router resolves /gaji to (admin)/gaji regardless of role and neither group layout checks session role. Mitigation: add useAuth role check + <Redirect> in both group _layout.tsx files."
+}

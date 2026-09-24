@@ -1,40 +1,39 @@
 {
   "app_name": "TukangGaji Pro",
-  "personality": "7 Dark-First Utility DARK",
-  "personality_one_liner": "An industrial-grade command center for site admins to track daily attendance, half-days, hourly overtime, and project payroll with absolute clarity.",
+  "personality": "7 Dark-First Utility",
+  "personality_one_liner": "Rugged, high-contrast operational field utility for construction attendance, overtime, biweekly payroll, and group foreman payments.",
   "color": {
-    "surface": "#121417",
+    "surface": "#121316",
     "onSurface": "#F4F5F7",
-    "surfaceSecondary": "#1A1D23",
+    "surfaceSecondary": "#1A1C21",
     "onSurfaceSecondary": "#9CA3AF",
-    "surfaceTertiary": "#252A34",
+    "surfaceTertiary": "#262932",
     "onSurfaceTertiary": "#D1D5DB",
     "surfaceInverse": "#FFFFFF",
-    "onSurfaceInverse": "#121417",
-    "brand": "#D97706",
-    "brandPrimary": "#F59E0B",
-    "onBrandPrimary": "#121417",
-    "brandSecondary": "#B45309",
+    "onSurfaceInverse": "#121316",
+    "brand": "#E05A36",
+    "brandPrimary": "#E05A36",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#D97706",
     "onBrandSecondary": "#FFFFFF",
-    "brandTertiary": "rgba(245, 158, 11, 0.15)",
-    "onBrandTertiary": "#F59E0B",
+    "brandTertiary": "rgba(224, 90, 54, 0.15)",
+    "onBrandTertiary": "#E05A36",
     "success": "#10B981",
     "onSuccess": "#FFFFFF",
     "warning": "#F59E0B",
-    "onWarning": "#121417",
+    "onWarning": "#121316",
     "error": "#EF4444",
     "onError": "#FFFFFF",
     "info": "#3B82F6",
     "onInfo": "#FFFFFF",
-    "border": "#2A313C",
-    "borderStrong": "#4B5563",
-    "divider": "#1F242C",
-    "muted": "#9CA3AF",
-    "onBrand": "#121417"
+    "border": "#2E333F",
+    "borderStrong": "#E05A36",
+    "divider": "#1F242E",
+    "muted": "#6B7280"
   },
   "typography": {
-    "displayFontFamily": "Barlow Condensed",
-    "textFontFamily": "Satoshi",
+    "displayFontFamily": "BarlowCondensed_700Bold",
+    "textFontFamily": "Inter_400Regular",
     "scale": {
       "sm": 12,
       "base": 14,
@@ -44,7 +43,7 @@
     }
   },
   "spacing": {
-    "rule": "Generous touch spacing for outdoor site use with 8pt base grid and 56pt minimum interactive targets.",
+    "rule": "Generous touch spacing with compact operational density for field workers and admins.",
     "xs": 4,
     "sm": 8,
     "md": 12,
@@ -65,10 +64,10 @@
   "glassmorphism": {
     "enabled": false,
     "do's": [
-      "Use solid contrast borders and dark tactical surfaces for extreme outdoor visibility under direct sunlight."
+      "Use sharp high-contrast cards and division lines for rugged outdoor legibility under direct sunlight."
     ],
     "dont's": [
-      "Never use low-contrast glass blur that reduces text legibility in dusty field conditions."
+      "Avoid heavy blur and translucent pastels that reduce outdoor readability."
     ]
   },
   "platform_libraries": {
@@ -85,65 +84,73 @@
   },
   "screens": [
     {
-      "name": "Dashboard",
-      "purpose": "Overview of active project workforce, today's attendance breakdown (Full/Half/Absent), and running payroll liability.",
+      "name": "Auth / Role Selection",
+      "purpose": "Role login for Admin (PIN code) or Worker (Worker Code + PIN) with quick access toggle.",
       "states": {
-        "loading": "Skeleton card loader for active project stats and quick clock-in counters.",
-        "empty": "No workers assigned to this project yet. Tap 'Manage Workers' to assign crew members.",
-        "error": "Failed to sync attendance ledger. Check field connection and tap Retry."
+        "loading": "Checking credentials...",
+        "empty": "Enter worker code / PIN or Admin passcode",
+        "error": "Invalid PIN or worker code. Please retry."
       },
-      "layout": "Sticky site header with project switcher dropdown, live metric cards (Active Workers, Present Today, Running Payroll), quick action grid for attendance check-in, and recent attendance feed."
+      "layout": "Centered card with high-contrast amber/rust accent buttons and numeric PIN pad."
     },
     {
-      "name": "Attendance Entry",
-      "purpose": "Fast daily check-in/out logging with support for Full-Day, Half-Day (Morning/Afternoon), and precise hourly overtime tracking.",
+      "name": "Admin Dashboard",
+      "purpose": "Overview of active workers, daily attendance counts, project selector, and quick action shortcuts.",
       "states": {
-        "loading": "Loading worker list and active shift assignments...",
-        "empty": "All workers have been checked in for today.",
-        "error": "Could not record attendance. Please retry or save offline."
+        "loading": "Loading active projects and attendance counts...",
+        "empty": "No active projects found. Create a project to start.",
+        "error": "Failed to load dashboard metrics. Tap retry."
       },
-      "layout": "Searchable worker list for active project, instant status selector chips (Hadir Full / Setengah / Alpha), time-in/out pickers, and expandable overtime hour stepper."
+      "layout": "Scrollable metrics cards with project switcher banner and quick attendance/payroll tabs."
     },
     {
-      "name": "Workers & Rates",
-      "purpose": "Manage workforce directory, active project assignment, custom daily rates, half-day rates, and hourly overtime rates.",
+      "name": "Worker Attendance Timeline",
+      "purpose": "Log actual clock-in/out, morning 07:00-11:30, afternoon 13:00-17:00, no-rest 17:00-18:00, and hourly overtime.",
       "states": {
-        "loading": "Loading worker database and rate configurations...",
-        "empty": "No workers registered. Add your first worker to get started.",
-        "error": "Failed to load worker directory. Tap to retry."
+        "loading": "Loading today's attendance roster...",
+        "empty": "No workers registered for this project.",
+        "error": "Could not sync attendance. Check connection."
       },
-      "layout": "Card list of workers with avatar/initials, active project badge, configured daily rate, half-day rate, and overtime rate per hour, with FAB to add new worker."
+      "layout": "Tap-based status controls (Full, Half Morning, Half Afternoon, Absent), time pickers, and overtime stepper."
     },
     {
-      "name": "Projects",
-      "purpose": "Manage active construction sites, location details, and assigned single active workforce.",
+      "name": "Worker & Group Management",
+      "purpose": "Manage workers across groups (Teknisi, Besi, Kayu, Finishing, Tukang, Kuli), rates, worker PINs, and foreman representation.",
       "states": {
-        "loading": "Loading construction projects...",
-        "empty": "No projects created yet. Tap '+' to start a new project site.",
-        "error": "Could not load projects. Please check connection."
+        "loading": "Loading worker roster...",
+        "empty": "No workers in this group. Add a worker below.",
+        "error": "Failed to save worker record."
       },
-      "layout": "Vertical list of project cards showing site name, location, active worker count, budget status, and tap-to-switch active project."
+      "layout": "Segmented group filter tabs, list of workers with rates and PIN management modal."
     },
     {
-      "name": "Payroll Summary",
-      "purpose": "Automated payroll calculation combining daily/half-day attendance wages + hourly overtime rates, with payment status tracking (Unpaid / Paid).",
+      "name": "Biweekly Payroll & XLSX Export",
+      "purpose": "Calculate earnings for fixed periods (1-15 and 16-end), group-filtered payroll, foreman lump payments, and Excel export.",
       "states": {
-        "loading": "Calculating payroll ledger across active project...",
-        "empty": "No attendance records found for this payroll cycle.",
-        "error": "Failed to compute payroll summary. Tap to retry."
+        "loading": "Calculating hours and rates...",
+        "empty": "No attendance records found for this period.",
+        "error": "Failed to generate payroll report."
       },
-      "layout": "Date range picker, total payroll liability hero card, breakdown by worker (Days Worked + Overtime Hours x Rate = Total Pay), and one-tap 'Mark as Paid' action button."
+      "layout": "Period selector dropdown, summary totals card, group breakdown, foreman pay trigger, and Excel export button."
+    },
+    {
+      "name": "Worker Self-Service Portal",
+      "purpose": "Read-only view for workers to check their own attendance history, hourly wages, overtime, and biweekly payout summary.",
+      "states": {
+        "loading": "Loading your personal records...",
+        "empty": "No attendance history recorded yet.",
+        "error": "Could not load worker profile."
+      },
+      "layout": "Clean personal badge header, summary stats, and chronological attendance log."
     }
   ],
-  "images": {
-    "worker_default_avatar": {
-      "url": "https://images.unsplash.com/photo-1672748341520-6a839e6c05bb?auto=format&fit=crop&q=85&w=400",
-      "alt": "Construction site worker portrait"
-    },
-    "project_hero": {
-      "url": "https://images.pexels.com/photos/34670926/pexels-photo-34670926.jpeg?auto=format&fit=crop&q=85&w=800",
-      "alt": "Construction site overview"
-    }
-  },
-  "instructions_to_main_agent": "Ensure absolute field reliability and sunlight readability using the Dark-First Utility palette (#121417 background with warm amber #F59E0B accents). Implement sticky bottom navigation with 5 active tabs: Dashboard, Attendance, Workers, Projects, Payroll. Support admin-only workflow with strict one-worker-one-active-project rule. Ensure daily rate, half-day rate, and hourly overtime rate are clearly computed and editable in worker settings. All touch targets must be >= 44x44pt. Use exact token names from guidelines.json."
+  "images": {},
+  "instructions_to_main_agent": [
+    "Retain TukangGaji Pro dark utility aesthetic with warm rust/amber accents (#E05A36).",
+    "Support Admin login and Worker PIN login flow.",
+    "Include actual clock-in/out and calculated paid work hours with no-rest afternoon option (17:00-18:00) and hourly overtime from 18:00.",
+    "Implement worker groups: Teknisi, Besi, Kayu, Finishing, Tukang, Kuli.",
+    "Add group foreman representative payment flow and biweekly payroll periods (1-15 and 16-end) with XLSX export action.",
+    "Ensure all interactive targets are >=44x44pt and safe area is respected at screen roots."
+  ]
 }

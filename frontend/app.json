@@ -38,7 +38,9 @@
       "expo-image",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-sharing",
+      "@react-native-vector-icons/material-design-icons"
     ],
     "experiments": {
       "typedRoutes": true
